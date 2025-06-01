@@ -74,3 +74,31 @@ module uart_apb_if (
 endmodule
 
 ```
+```
+module uart_baud_gen (
+    input  wire       clk,
+    input  wire       resetn,
+    input  wire [15:0] baud_div,
+    output reg        tick
+);
+
+    reg [15:0] counter;
+
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
+            counter <= 0;
+            tick <= 0;
+        end else begin
+            if (counter == baud_div) begin
+                tick <= 1;
+                counter <= 0;
+            end else begin
+                tick <= 0;
+                counter <= counter + 1;
+            end
+        end
+    end
+endmodule
+
+```
+
