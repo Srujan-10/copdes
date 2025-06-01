@@ -208,3 +208,69 @@ module uart_rx (
 endmodule
 
 ```
+```
+module uart_tx (
+    input  wire       clk,
+    input  wire       resetn,
+    input  wire       tick,
+    input  wire [7:0] data_in,
+    input  wire       valid,
+    output wire       ready,
+    output reg        tx
+);
+
+    wire fifo_empty, fifo_full;
+    wire [7:0] fifo_dout;
+    reg  fifo_rd_en;
+
+    uart_fifo tx_fifo (
+        .clk(clk),
+        .resetn(resetn),
+        .wr_en(valid & ~fifo_full),
+        .rd_en(fifo_rd_en),
+        .din(data_in),
+        .dout(fifo_dout),
+        .full(fifo_full),
+        .empty(fifo_empty),
+        .count()
+    );
+
+    assign ready = ~fifo_full;
+
+    reg [3:0] state, bit_cnt;
+    reg [9:0] shifter;
+
+    localparam IDLE = 0, LOAD = 1, SHIFT = 2;
+
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
+            state <= IDLE;
+            tx <= 1;
+            fifo_rd_en <= 0;
+        end else if (tick) begin
+            fifo_rd_en <= 0;
+            case (state)
+                IDLE: if (!fifo_empty) begin
+                    fifo_rd_en <= 1;
+                    state <= LOAD;
+                end
+                LOAD: begin
+                    shifter <= {1'b1, fifo_dout, 1'b0}; // Stop + Data + Start
+                    bit_cnt <= 0;
+                    state <= SHIFT;
+                end
+                SHIFT: begin
+                    tx <= shifter[0];
+                    shifter <= shifter >> 1;
+                    bit_cnt <= bit_cnt + 1;
+                    if (bit_cnt == 9) begin
+                        state <= IDLE;
+                        tx <= 1;
+                    end
+                end
+            endcase
+        end
+    end
+endmodule
+
+```
