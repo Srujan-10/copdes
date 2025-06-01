@@ -101,4 +101,48 @@ module uart_baud_gen (
 endmodule
 
 ```
+```
+module uart_fifo #(
+    parameter DATA_WIDTH = 8,
+    parameter DEPTH = 16
+)(
+    input  wire                  clk,
+    input  wire                  resetn,
+    input  wire                  wr_en,
+    input  wire                  rd_en,
+    input  wire [DATA_WIDTH-1:0] din,
+    output reg  [DATA_WIDTH-1:0] dout,
+    output wire                  full,
+    output wire                  empty,
+    output wire [3:0]            count
+);
 
+    reg [DATA_WIDTH-1:0] mem [0:DEPTH-1];
+    reg [3:0] w_ptr, r_ptr;
+    reg [4:0] fifo_cnt;
+
+    assign full  = (fifo_cnt == DEPTH);
+    assign empty = (fifo_cnt == 0);
+    assign count = fifo_cnt[3:0];
+
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
+            w_ptr <= 0;
+            r_ptr <= 0;
+            fifo_cnt <= 0;
+        end else begin
+            if (wr_en && !full) begin
+                mem[w_ptr] <= din;
+                w_ptr <= w_ptr + 1;
+                fifo_cnt <= fifo_cnt + 1;
+            end
+            if (rd_en && !empty) begin
+                dout <= mem[r_ptr];
+                r_ptr <= r_ptr + 1;
+                fifo_cnt <= fifo_cnt - 1;
+            end
+        end
+    end
+endmodule
+
+```
