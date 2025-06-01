@@ -146,3 +146,65 @@ module uart_fifo #(
 endmodule
 
 ```
+```
+module uart_rx (
+    input  wire clk,
+    input  wire resetn,
+    input  wire tick,
+    input  wire rx,
+    output wire [7:0] data_out,
+    output wire       valid,
+    input  wire       ready
+);
+
+    reg [3:0] bit_cnt;
+    reg [9:0] shift_reg;
+    reg [2:0] state;
+    reg       fifo_wr_en;
+
+    wire fifo_full, fifo_empty;
+
+    localparam IDLE = 0, START = 1, DATA = 2, STOP = 3;
+
+    uart_fifo rx_fifo (
+        .clk(clk),
+        .resetn(resetn),
+        .wr_en(fifo_wr_en),
+        .rd_en(ready & ~fifo_empty),
+        .din(shift_reg[8:1]),
+        .dout(data_out),
+        .full(fifo_full),
+        .empty(fifo_empty),
+        .count()
+    );
+
+    assign valid = ~fifo_empty;
+
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
+            state <= IDLE;
+            fifo_wr_en <= 0;
+        end else if (tick) begin
+            fifo_wr_en <= 0;
+            case (state)
+                IDLE: if (!rx) state <= START;
+                START: begin
+                    bit_cnt <= 0;
+                    shift_reg <= 0;
+                    state <= DATA;
+                end
+                DATA: begin
+                    shift_reg <= {rx, shift_reg[9:1]};
+                    bit_cnt <= bit_cnt + 1;
+                    if (bit_cnt == 7) state <= STOP;
+                end
+                STOP: begin
+                    if (!fifo_full) fifo_wr_en <= 1;
+                    state <= IDLE;
+                end
+            endcase
+        end
+    end
+endmodule
+
+```
