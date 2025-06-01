@@ -1,4 +1,76 @@
 ```
+\\\\fifo_SDC
+create_clock -period 5 [get_ports clk]
+set_input_delay -max 2.5 -clock clk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock clk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks clk]
+set_clock_uncertainty -hold 0.2 [get_clocks clk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks clk]
+
+```
+```
+\\\\uart_rx.sdc
+create_clock -period 5 [get_ports clk]
+set_input_delay -max 2.5 -clock clk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock clk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks clk]
+set_clock_uncertainty -hold 0.2 [get_clocks clk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks clk]
+
+```
+```
+\\\\UART_TX
+create_clock -period 5 [get_ports clk]
+set_input_delay -max 2.5 -clock clk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock clk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks clk]
+set_clock_uncertainty -hold 0.2 [get_clocks clk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks clk]
+
+```
+```
+\\BAUD_GEN
+create_clock -period 5 [get_ports clk]
+set_input_delay -max 2.5 -clock clk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock clk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks clk]
+set_clock_uncertainty -hold 0.2 [get_clocks clk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks clk]
+
+```
+```
+\\\APB_IF
+create_clock -period 5 [get_ports pclk]
+set_input_delay -max 2.5 -clock pclk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock pclk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks pclk]
+set_clock_uncertainty -hold 0.2 [get_clocks pclk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks pclk]
+
+```
+```
+top_module
+create_clock -period 5 [get_ports pclk]
+set_input_delay -max 2.5 -clock pclk [all_inputs]
+set_input_transition 0.2 [all_inputs]
+set_output_delay -max 2.5 -clock pclk [all_outputs]
+set_clock_uncertainty -setup 0.6 [get_clocks pclk]
+set_clock_uncertainty -hold 0.2 [get_clocks pclk]
+set_max_transition 0.5 [current_design]
+set_max_transition -clock_path 0.1 [get_clocks pclk]
+
+```
+```
 // uart_top.v
 module uart_top (
     input  wire        pclk,
