@@ -1,4 +1,89 @@
 ```
+// uart_top.v
+module uart_top (
+    input  wire        pclk,
+    input  wire        presetn,
+    input  wire        psel,
+    input  wire        penable,
+    input  wire        pwrite,
+    input  wire [7:0]  paddr,
+    input  wire [31:0] pwdata,
+    output wire [31:0] prdata,
+    output wire        pready,
+
+    input  wire        rx,
+    output wire        tx,
+    output wire        irq
+);
+
+    // Internal wires
+    wire [7:0] tx_data;
+    wire       tx_valid, tx_ready;
+    wire [7:0] rx_data;
+    wire       rx_valid, rx_ready;
+    wire       baud_tick;
+    wire       tx_irq, rx_irq;
+    wire [15:0] baud_div;
+
+    // APB interface
+    uart_apb_if apb_if (
+        .pclk(pclk),
+        .presetn(presetn),
+        .psel(psel),
+        .penable(penable),
+        .pwrite(pwrite),
+        .paddr(paddr),
+        .pwdata(pwdata),
+        .prdata(prdata),
+        .pready(pready),
+        .tx_data(tx_data),
+        .tx_valid(tx_valid),
+        .tx_ready(tx_ready),
+        .rx_data(rx_data),
+        .rx_valid(rx_valid),
+        .rx_ready(rx_ready),
+        .baud_div(baud_div),
+        .tx_irq(tx_irq),
+        .rx_irq(rx_irq)
+    );
+
+    assign irq = tx_irq | rx_irq;
+
+    // Baud generator
+    uart_baud_gen baud_gen (
+        .clk(pclk),
+        .resetn(presetn),
+        .baud_div(baud_div),
+        .tick(baud_tick)
+    );
+
+    // Transmitter
+    uart_tx tx_core (
+        .clk(pclk),
+        .resetn(presetn),
+        .tick(baud_tick),
+        .data_in(tx_data),
+        .valid(tx_valid),
+        .ready(tx_ready),
+        .tx(tx)
+    );
+
+    // Receiver
+    uart_rx rx_core (
+        .clk(pclk),
+        .resetn(presetn),
+        .tick(baud_tick),
+        .rx(rx),
+        .data_out(rx_data),
+        .valid(rx_valid),
+        .ready(rx_ready)
+    );
+
+endmodule
+
+```
+
+```
 module uart_apb_if (
     input  wire        pclk,
     input  wire        presetn,
